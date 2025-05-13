@@ -5,8 +5,9 @@ import EditUsername from "../components/EditUsername";
 import Footer from "../components/Footer";
 
 import { useEffect } from "react";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+
+import { useSelector } from "react-redux";
 
 function Profil() {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);

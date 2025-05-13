@@ -130,6 +130,8 @@ paths:
             type: array
             items:
               $ref: "#/definitions/Transaction"
+        "400":
+          description: Invalid ID or invalid month format
         "401":
           description: Unauthorized
         "404":
@@ -159,7 +161,7 @@ paths:
           schema:
             $ref: "#/definitions/Transaction"
         "400":
-          description: Invalid Data
+          description: Invalid transaction ID format
         "401":
           description: Unauthorized
         "404":
@@ -193,7 +195,7 @@ paths:
           schema:
             $ref: "#/definitions/Transaction"
         "400":
-          description: Invalid Data
+          description: Invalid input
         "401":
           description: Unauthorized
         "404":

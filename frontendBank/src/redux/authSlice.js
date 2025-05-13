@@ -1,14 +1,13 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { loginUser, userProfile, updateUser } from "./authAPI";
 
+// Prépare l'état initial
+const token = localStorage.getItem("token");
 let parsedUser = null;
-const storedUser = localStorage.getItem("user");
 
 try {
-  if (storedUser) {
-    parsedUser = JSON.parse(storedUser);
-  }
+  const storedUser = localStorage.getItem("user");
+  if (storedUser) parsedUser = JSON.parse(storedUser);
 } catch (e) {
   console.error("Erreur lors de l'analyse :", e);
   localStorage.removeItem("user"); // nettoie si les données sont mauvaises
@@ -16,65 +15,12 @@ try {
 
 const initialState = {
   user: parsedUser,
-  isAuthenticated: !!localStorage.getItem("token"), // Vérifie si le token existe dans le localStorage
-  token: localStorage.getItem("token") || null, // Récupère le token du localStorage
+  isAuthenticated: !!token, // Vérifie si le token existe dans le localStorage
+  token: token || null, // Récupère le token du localStorage
   error: null,
 };
 
-const authSlice = createSlice({
-  name: "auth",
-  initialState,
-  // actions que je définis
-  reducers: {
-    login: (state, action) => {
-      state.user = action.payload;
-      state.isAuthenticated = true;
-    },
-    logout: (state) => {
-      state.user = null;
-      state.isAuthenticated = false;
-      state.token = null;
-      state.error = null;
-
-      // nettoie localStorage lors de la déconnexion
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-    },
-  },
-  // ecouter ce que renvoie les thunk (les actions qui viennent d'ailleurs)
-  extraReducers: (builder) => {
-    builder
-      // voici comment modifier le state quand requête réussit
-      .addCase(loginThunk.fulfilled, (state, action) => {
-        state.token = action.payload; // stocker le token dans le state
-        state.isAuthenticated = true; // utilisateur connecté
-        state.error = null;
-      })
-      // voici comment modifier le state quand requête échoue
-      .addCase(loginThunk.rejected, (state, action) => {
-        state.error = action.payload; // stocke l'erreur dans le state
-        state.token = null; // nettoie le token
-        state.isAuthenticated = false;
-      })
-
-      .addCase(userProfileThunk.fulfilled, (state, action) => {
-        state.user = action.payload;
-      })
-      .addCase(userProfileThunk.rejected, (state, action) => {
-        state.error = action.payload;
-      })
-
-      .addCase(updateUserThunk.fulfilled, (state, action) => {
-        state.user = action.payload;
-        state.error = null;
-        localStorage.setItem("user", JSON.stringify(action.payload));
-      })
-      .addCase(updateUserThunk.rejected, (state, action) => {
-        state.error = action.payload;
-      });
-  },
-});
-
+// THUNKS
 export const loginThunk = createAsyncThunk(
   "auth/login", // nom de l'action (pending, fulfilled, rejected)
   async (dataUser, thunkAPI) => {
@@ -124,6 +70,59 @@ export const updateUserThunk = createAsyncThunk(
     }
   }
 );
-export const { login, logout } = authSlice.actions;
 
+// SLICE gérant l'authentification
+const authSlice = createSlice({
+  name: "auth",
+  initialState,
+
+  // actions synchrones
+  reducers: {
+    logout: (state) => {
+      state.user = null;
+      state.isAuthenticated = false;
+      state.token = null;
+      state.error = null;
+
+      // nettoie localStorage lors de la déconnexion
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    },
+  },
+
+  // actions asynchrones : ecoute ce que renvoie les thunk
+  extraReducers: (builder) => {
+    builder
+      // voici comment modifier le state quand requête réussit
+      .addCase(loginThunk.fulfilled, (state, action) => {
+        state.token = action.payload; // stocker le token dans le state
+        state.isAuthenticated = true; // utilisateur connecté
+        state.error = null;
+      })
+      // voici comment modifier le state quand requête échoue
+      .addCase(loginThunk.rejected, (state, action) => {
+        state.error = action.payload; // stocke l'erreur dans le state
+        state.token = null; // nettoie le token
+        state.isAuthenticated = false;
+      })
+
+      .addCase(userProfileThunk.fulfilled, (state, action) => {
+        state.user = action.payload;
+      })
+      .addCase(userProfileThunk.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+
+      .addCase(updateUserThunk.fulfilled, (state, action) => {
+        state.user = action.payload;
+        state.error = null;
+        // localStorage.setItem("user", JSON.stringify(action.payload));
+      })
+      .addCase(updateUserThunk.rejected, (state, action) => {
+        state.error = action.payload;
+      });
+  },
+});
+
+export const { logout } = authSlice.actions;
 export default authSlice.reducer;

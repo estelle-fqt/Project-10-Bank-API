@@ -3,35 +3,33 @@ import { useDispatch, useSelector } from "react-redux";
 import { updateUserThunk } from "../redux/authSlice";
 
 function EditUsername() {
-  //   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  const user = useSelector((state) => state.auth.user);
-
   const [editing, setEditing] = useState(false);
   const [username, setUsername] = useState();
 
   const dispatch = useDispatch();
+  const user = useSelector((state) => state.auth.user);
   const token = useSelector((state) => state.auth.token);
 
   useEffect(() => {
-    setUsername(user?.username || "");
+    setUsername(user?.username);
   }, [user]);
 
   const save = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // empêche le rechargement du formulaire
     try {
       const updatedUser = await dispatch(
         updateUserThunk({ token, userName: username })
-      ).unwrap();
-      setEditing(false);
-      setUsername(updatedUser.userName); // Met à jour l'input avec le nom modifié
+      ).unwrap(); // unwrap accède directement aux données sans l'obj "action"
+      setEditing(false); // revient à l'affichage normal
+      setUsername(updatedUser.userName); // Met à jour l'input avec le nouveau pseudo
     } catch (error) {
       console.error("Erreur lors de la mise à jour :", error);
     }
   };
 
   const cancel = () => {
-    setUsername(user?.username || "");
-    setEditing(false);
+    setUsername(user?.username || ""); //remet l'ancien pseudo
+    setEditing(false); //ferme le formulaire
   };
 
   return (

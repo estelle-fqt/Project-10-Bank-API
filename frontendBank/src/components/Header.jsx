@@ -37,14 +37,13 @@ function Header() {
           {/* Lien vers profil avc prénom */}
           <Link to="/profile" className="main-nav-item">
             <i className="fa fa-user-circle"></i>
-            {user?.userName}
+            {user?.userName || user?.firstName}
           </Link>
-          {/* Btn Sign Out */}
+          {/* Btn Sign Out (action) */}
           <button className="sign-out-btn" onClick={signOut}>
             <i className="fa fa-user-circle"></i>
             Sign Out
           </button>{" "}
-          {/*action*/}
         </>
       ) : (
         <Link to="/login" className="main-nav-item">
